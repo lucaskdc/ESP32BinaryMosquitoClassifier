@@ -1,0 +1,30 @@
+menu "Custom SDKCONFIG configs"
+config USE_HIMEM
+    int "use himem"
+    default 0
+    range 0 1
+
+config SDSPI_CS
+    int "SD card SPI CS pin"
+    default 5
+config SDSPI_CLK
+    int "SD card SPI CLK pin"
+    default 18
+config SDSPI_MISO
+    int "SD card SPI MISO pin"
+    default 19
+config SDSPI_MOSI
+    int "SD card SPI MOSI pin"
+    default 23
+
+config I2S_WS
+    int "Mic: I2S WS pin"
+    default 15
+config I2S_SD
+    int "Mic: I2S SD pin"
+    default 13
+config I2S_SCK
+    int "Mic: I2S SCK pin"
+    default 2
+
+endmenu

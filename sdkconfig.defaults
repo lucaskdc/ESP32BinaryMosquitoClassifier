@@ -1,0 +1,22 @@
+# This file was generated using idf.py save-defconfig. It can be edited manually.
+# Espressif IoT Development Framework (ESP-IDF) Project Minimal Configuration
+#
+
+CONFIG_SPIRAM=y
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+
+
+
+
+CONFIG_FATFS_LFN_HEAP=y
+CONFIG_FATFS_MAX_LFN=63
+
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_USE_HIMEM=0
+CONFIG_SDSPI_CS=10
+CONFIG_SDSPI_CLK=12
+CONFIG_SDSPI_MISO=13
+CONFIG_SDSPI_MOSI=11
+CONFIG_I2S_WS=42
+CONFIG_I2S_SD=41
+CONFIG_I2S_SCK=2
