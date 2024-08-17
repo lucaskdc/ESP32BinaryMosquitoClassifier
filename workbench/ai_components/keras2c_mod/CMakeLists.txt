@@ -1,0 +1,2 @@
+idf_component_register(SRCS k2c_activations.c k2c_convolution_layers.c k2c_core_layers.c k2c_embedding_layers.c k2c_helper_functions.c k2c_merge_layers.c k2c_normalization_layers.c k2c_pooling_layers.c k2c_recurrent_layers.c
+                    INCLUDE_DIRS ./include/)
