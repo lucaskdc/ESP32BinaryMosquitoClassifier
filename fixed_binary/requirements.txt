@@ -1,0 +1,5 @@
+numpy==1.19.5
+tensorflow==2.5.0
+librosa==0.8.1
+matplotlib
+jupyterlab==4.0.10
