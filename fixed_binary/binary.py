@@ -22,7 +22,7 @@ def windows(data, window_size):
     start += (window_size // 2)
 
 def extract_features( sub_dirs, file_ext="*.wav"):
-  print("Extract features from {} list: {}", file_url, sub_dirs)
+  print("Extract features from {} list: {}", dataset_folder, sub_dirs)
   window_size = hop_length * (frames - 1)
   log_specgrams = []
   labels = []
@@ -30,9 +30,10 @@ def extract_features( sub_dirs, file_ext="*.wav"):
 
 
   for l, sub_dir in enumerate(sub_dirs):
-    for fn in glob.glob(os.path.join(file_url, sub_dir, file_ext)):
+    for fn in glob.glob(os.path.join(dataset_folder, sub_dir, file_ext)):
       sound_clip, _ = librosa.load(fn, sr=sample_rate)
       print('Extracting features from: ' + fn)
+      fn = fn.replace('\\','/') # windows
       label = fn.split('/')[-2]
       for (start, end) in windows(sound_clip, window_size):
         if (len(sound_clip[start:end]) == window_size):
@@ -56,10 +57,10 @@ def load_data():
     tr_sub_dirs = ["0", "1"]
     #tr_sub_dirs = ["aedes_aegypti", "aedes_albopictus"]
     tr_features, tr_labels = extract_features(tr_sub_dirs)
-    np.savez(file_url+'\\features.npz', tr_features, tr_labels)
+    np.savez(os.path.join(output_dir, 'features.npz'), tr_features, tr_labels)
     return tr_features, tr_labels
   else:
-    npread = np.load(file_url+'\\features.npz')
+    npread = np.load(os.path.join(output_dir, 'features.npz'))
     return npread['arr_0'], npread['arr_1']
     
 def create_model():
@@ -94,19 +95,26 @@ def train_and_evaluate_model(model, xtrain, ytrain, xval, yval):
   print(ytrain.shape)
   print(ytrain)
 
+  feature_result = os.path.join(output_dir, 'feature-result')
+  # Check if the folder exists
+  if not os.path.exists(feature_result):
+      # Create the folder
+      os.makedirs(feature_result)
+      print(f"Folder '{feature_result}' created.")
+
   fit_now = DEF_TRAIN_NOW
   if (fit_now):
     model.fit(xtrain, ytrain,  batch_size=32, epochs=10, verbose=2)
-    with open(os.path.join(file_url,"model_binary.json"), "w") as json_file:
+    with open(os.path.join(output_dir,"model_binary.json"), "w") as json_file:
       model_json = model.to_json()
       json_file.write(model_json)
-      model.save_weights(os.path.join(file_url,"model_binary.h5"))
+      model.save_weights(os.path.join(output_dir,"model_binary.h5"))
   else: 
-    with open(os.path.join(file_url,"model_binary.json"), 'r') as json_file:
+    with open(os.path.join(output_dir,"model_binary.json"), 'r') as json_file:
       loaded_model_json = json_file.read()
       json_file.close()
       #model = model_from_json(loaded_model_json)
-      model.load_weights(os.path.join(file_url,"model_binary.h5"))
+      model.load_weights(os.path.join(output_dir,"model_binary.h5"))
 
   #y_predicted_classes = model.predict_classes(xval)
   #y_predicted_probability = model.predict(xval)
@@ -118,17 +126,17 @@ def train_and_evaluate_model(model, xtrain, ytrain, xval, yval):
     y_predicted_probability = all_outputs
   y_predicted_classes = np.argmax(y_predicted_probability, axis=1)
 
-  with open(file_url+'\\'+'summary.txt', 'w') as fsummary:
+  with open(os.path.join(output_dir, 'summary.txt'), 'w') as fsummary:
     fsummary.write('Feature shape: {}\n'.format(xval.shape[1:]))
     fsummary.write('Output shape: {}\n'.format(y_predicted_probability.shape[1:]))
     fsummary.write('qty: {}'.format(xval.shape[0]))
 
-  file_x_all = open(file_url+'\\feature-result\\ALL'+str(xval.shape[0])+'-x.bin_input', 'wb')
-  file_y_all = open(file_url+'\\feature-result\\ALL'+str(xval.shape[0])+'-y.bin_input', 'wb')
+  file_x_all = open(os.path.join(feature_result, 'ALL'+str(xval.shape[0])+'-x.bin_input'), 'wb')
+  file_y_all = open(os.path.join(feature_result, 'ALL'+str(xval.shape[0])+'-y.bin_input'), 'wb')
   for i in range(0,xval.shape[0]):
     tempx = xval[i].flatten(order='C')
     file_x_all.write(tempx.tobytes())
-    with open(file_url+'\\feature-result\\'+str(i)+'-x.bin_input', 'wb') as filex:
+    with open(os.path.join(feature_result, str(i)+'-x.bin_input'), 'wb') as filex:
       filex.write(tempx.tobytes())
       filex.close()
 
@@ -136,14 +144,14 @@ def train_and_evaluate_model(model, xtrain, ytrain, xval, yval):
       for (iter_output, out) in enumerate(all_outputs[:-1]):
         if i == 0:
           print(out[0].shape)
-        with open(file_url+'\\feature-result\\'+str(i)+'-'+str(iter_output+1)+'.bin_inter', 'wb') as fileint:
+        with open(os.path.join(feature_result, str(i)+'-'+str(iter_output+1)+'.bin_inter'), 'wb') as fileint:
           temp = out[i].flatten(order='C')
           fileint.write(temp.tobytes())
           fileint.close()
     
     tempy = y_predicted_probability[i].flatten(order='C')
     file_y_all.write(tempy.tobytes())
-    with open(file_url+'\\feature-result\\'+str(i)+'-y.bin_output', 'wb') as filey:
+    with open(os.path.join(feature_result, str(i)+'-y.bin_output'), 'wb') as filey:
       filey.write(tempy.tobytes())
       filey.close()
 
@@ -170,7 +178,9 @@ def train_and_evaluate_model(model, xtrain, ytrain, xval, yval):
 seed = 123
 np.random.seed(seed)  # for reproducibility
 
-file_url = '.'
+current_folder = os.path.dirname(os.path.abspath(__file__))
+dataset_folder = os.path.abspath(os.path.join(current_folder, "../train_correctorder"))
+output_dir = os.path.abspath(os.path.join(current_folder, "../output"))
 
 DEF_CALCULATE_FEATURES_NOW = True
 DEF_TRAIN_NOW = True
@@ -221,7 +231,7 @@ print("F1 scores: " + str(f1_scores))
 
 csv_filename = "binary.csv"
 
-with open(csv_filename, 'w', newline='') as csv_file:
+with open(os.path.join(output_dir, csv_filename), 'w', newline='') as csv_file:
   csv_writer = csv.writer(csv_file, delimiter=',')
   csv_writer.writerow(['accuracy', 'precision', 'recall', 'f1_score'])
 

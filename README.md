@@ -15,3 +15,34 @@ This file is built during usual build process of any project using the esp_psram
 
 Currently the process is not automatic and neither fully documentend. I intented to do it as soon is it possible, considering the time available and community demand.
    
+
+
+# Dependencies:
+
+a. visual studio code (https://vscode.download.prss.microsoft.com/dbazure/download/stable/fabdb6a30b49f79a7aba0f2ad9df9b399473380f/VSCodeUserSetup-x64-1.96.2.exe)
+
+b. vscode extensions: esp-idf, python, jupyter
+
+c. ESP-IDF v5.0.x
+
+d. (optional) miniconda or other python version management (https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Windows-x86_64.exe):
+
+e. python 3.8 installed via miniconda or the usual installer
+
+f. Jupyter lab to generate samples and graphics with the Verificacao.ipynb
+
+Instructions to install ESP-IDF framework after you have installed the extension in VS Code
+
+1. Open VSCode
+
+2. Ctrl+Shift+P: Configure ESP-IDF Extension
+
+3. Click Advanced
+
+4. Select esp-idf version=5.0.7
+
+5. Click Install
+
+6. Click Download Tools
+
+7. Wait
